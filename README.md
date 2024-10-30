@@ -16,6 +16,8 @@ Develop a (very) small “RESTful infrastructure” by setting up a database (DB
 
 ### Concept Image
 
+![Basic Infrastructure Diagram](RESTful_infracstructure_basic_architecture.png)
+
 ### Task Implementation Specification
 Implement a REST infrastructure consisting of:
 - **Database**
