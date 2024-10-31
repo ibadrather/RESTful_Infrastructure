@@ -11,11 +11,9 @@ dependencies = [
     "sqlalchemy>=2.0.36",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "reorder-python-imports>=3.14.0",
     "ruff>=0.7.1",
-]
-test = [
     "pytest>=8.3.3",
 ]
