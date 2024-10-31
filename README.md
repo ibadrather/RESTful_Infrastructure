@@ -29,3 +29,21 @@ Implement at least 3 API endpoints that:
 - Store data (coming from the client)
 - Read data (coming from the database)
 - Update data that is already present in the database
+
+
+
+## Setup Commands Summary
+
+- **`pip install uv`**: Installs the `uv` tool for managing and running Python projects.
+
+- **`pip install --upgrade pip`**: Upgrades the `pip` package manager to the latest version.
+
+- **`pip install --upgrade uv`**: Upgrades the `uv` tool to the latest version.
+
+- **`uv add --group dev ruff`**: Adds `ruff`, a linter, to the development group for code quality checks.
+
+- **`uv add --group test pytest`**: Adds `pytest`, a testing framework, to the test group for writing and running tests.
+
+- **`uv add sqlalchemy fastapi`**: Adds multiple dependencies for the project to `pyproject.toml`.
+
+- **`uv sync`**: Synchronizes the project dependencies as defined in the configuration.
