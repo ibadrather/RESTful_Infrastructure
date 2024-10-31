@@ -1,16 +1,14 @@
-from typing import Dict
 from typing import Any
+from typing import Dict
 from typing import Tuple
 
-from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Session
-
+from database.datatypes import SensorType
+from database.datatypes import VehicleStatus
 from database.models import SensorData
 from database.models import VehicleStatusData
 from database.repository import SensorRepository
 from database.repository import VehicleStatusRepository
-from database.schemas import SensorType
-from database.schemas import VehicleStatus
+from sqlalchemy.orm import Session
 
 
 class VehicleMonitoringService:
@@ -50,9 +48,7 @@ class VehicleMonitoringService:
             print(f"Error registering vehicle: {e}")
             raise
 
-    def update_status_of_particular_vehicle(
-        self, vehicle_serial: str, new_status: VehicleStatus, session: Session
-    ) -> VehicleStatusData:
+    def update_status_of_particular_vehicle(self, vehicle_serial: str, new_status: VehicleStatus, session: Session):
         """Updates the status of a specific vehicle.
 
         Args:
@@ -66,11 +62,7 @@ class VehicleMonitoringService:
         Raises:
             ValueError: If the vehicle is not found.
         """
-        try:
-            return self.vehicle_status_repo.update_status_of_particular_vehicle(vehicle_serial, new_status, session)
-        except ValueError as e:
-            print(f"Error updating vehicle status: {e}")
-            raise
+        return self.vehicle_status_repo.update_status_of_particular_vehicle(vehicle_serial, new_status, session)
 
     def record_sensor_data(
         self, vehicle_serial: str, sensor_type: SensorType, value: float, session: Session
@@ -90,10 +82,7 @@ class VehicleMonitoringService:
             ValueError: If the vehicle is not registered.
         """
         # First check if vehicle exists
-        try:
-            self.vehicle_status_repo.get_by_serial(vehicle_serial, session)
-        except NoResultFound:
-            raise ValueError(f"Cannot record sensor data: Vehicle {vehicle_serial} not registered")
+        self.vehicle_status_repo.get_vehicle_status(vehicle_serial, session)
 
         sensor_data = SensorData(vehicle_serial=vehicle_serial, sensor_type=sensor_type, value=value)
         return self.sensor_repo.add(sensor_data, session)
@@ -128,12 +117,11 @@ class VehicleMonitoringService:
             Exception: If data retrieval fails.
         """
 
-        try:
-            all_sensor_data = self.sensor_repo.get_all_sensor_data_for_vehicle(
-                vehicle_serial=vehicle_serial, session=session
-            )
-        except Exception:
-            print(f"Failed to get all sensor data for vehicle with serial: {vehicle_serial}")
-            raise
+        all_sensor_data = self.sensor_repo.get_all_sensor_data_for_vehicle(
+            vehicle_serial=vehicle_serial, session=session
+        )
 
         return all_sensor_data
+
+    def get_vehicle_status(self, vehicle_serial: str, session: Session) -> VehicleStatusData:
+        return self.vehicle_status_repo.get_vehicle_status(vehicle_serial, session)

@@ -2,19 +2,19 @@ from abc import ABC
 from abc import abstractmethod
 from typing import Any
 from typing import Dict
-from typing import Generic, Union
+from typing import Generic
 from typing import List
 from typing import TypeVar
+from typing import Union
 
 import pendulum
-from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
-
+from database.datatypes import SensorType
+from database.datatypes import VehicleStatus
 from database.models import SensorData
 from database.models import VehicleStatusData
-from database.schemas import SensorType
-from database.schemas import VehicleStatus
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 T = TypeVar("T")
 
@@ -58,8 +58,7 @@ class SensorRepository(Repository[SensorData]):
             return item
         except SQLAlchemyError:
             session.rollback()
-            # Log the exception
-            return None
+            raise ValueError("Failed to add sensor data.")
 
     def get_particular_sensor_data_for_vehicle(
         self, vehicle_serial: str, sensor_type: SensorType, session: Session
@@ -77,10 +76,34 @@ class SensorRepository(Repository[SensorData]):
         try:
             sensors = session.query(SensorData).filter_by(vehicle_serial=vehicle_serial, sensor_type=sensor_type).all()
             sensor_data = self._format_sensor_data(sensors)
+
+            if len(sensor_data) == 0:
+                raise NoResultFound
+
             return self._organize_vehicle_sensor_data(vehicle_serial, sensor_data)
-        except SQLAlchemyError:
-            # Log the exception
-            return {}
+
+        except NoResultFound:
+            message = f"Cannot get {sensor_type.value} data for vehicle with serial number {vehicle_serial}"
+
+            if not self.vehicle_exists(vehicle_serial, session):
+                message = f"Cannot get {sensor_type.value} data for vehicle with serial number {vehicle_serial} as vehicle doesn not exist."
+
+            raise ValueError(message)
+
+        except SQLAlchemyError as e:
+            raise ValueError(e)
+
+    def vehicle_exists(self, vehicle_serial: str, session: Session) -> bool:
+        """Checks if a vehicle exists in the database.
+
+        Args:
+            vehicle_serial (str): The serial number of the vehicle.
+            session (Session): The SQLAlchemy session object.
+
+        Returns:
+            bool: True if the vehicle exists, False otherwise.
+        """
+        return session.query(VehicleStatusData).filter_by(vehicle_serial=vehicle_serial).first() is not None
 
     def get_all_sensor_data_for_vehicle(self, vehicle_serial: str, session: Session) -> Dict[str, Any]:
         """Fetches all sensor data for a vehicle.
@@ -95,11 +118,18 @@ class SensorRepository(Repository[SensorData]):
 
         try:
             sensors = session.query(SensorData).filter_by(vehicle_serial=vehicle_serial).all()
+            if len(sensors) == 0:
+                raise NoResultFound
             sensor_data = self._format_sensor_data(sensors)
             return self._organize_vehicle_sensor_data(vehicle_serial, sensor_data)
-        except SQLAlchemyError:
-            # Log the exception
-            return {}
+
+        except NoResultFound:
+            message = f"Cannot get data for vehicle with serial number {vehicle_serial}"
+
+            if not self.vehicle_exists(vehicle_serial, session):
+                message = f"Cannot get data for vehicle with serial number {vehicle_serial} as vehicle doesn not exist."
+
+            raise ValueError(message)
 
     @staticmethod
     def _format_sensor_data(sensors: List[SensorData]) -> List[Dict[str, Any]]:
@@ -154,7 +184,7 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
 
     Methods:
         add: Adds a VehicleStatusData entry and commits the transaction.
-        get_by_serial: Retrieves the vehicle status by serial number.
+        get_vehicle_status: Retrieves the vehicle status by serial number.
         vehicle_exists: Checks if a vehicle exists in the database.
         create_vehicle: Creates a new vehicle entry if it doesn't exist.
         update_status_of_particular_vehicle: Updates the status of a specific vehicle.
@@ -174,7 +204,7 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
         session.commit()
         return item
 
-    def get_by_serial(self, vehicle_serial: str, session: Session) -> VehicleStatusData:
+    def get_vehicle_status(self, vehicle_serial: str, session: Session) -> VehicleStatusData:
         """Retrieves the status of a vehicle by its serial number.
 
         Args:
@@ -185,7 +215,10 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
             VehicleStatusData: The vehicle status entry.
         """
 
-        return session.query(VehicleStatusData).filter_by(vehicle_serial=vehicle_serial).one()
+        try:
+            return session.query(VehicleStatusData).filter_by(vehicle_serial=vehicle_serial).one()
+        except NoResultFound:
+            raise ValueError(f"Cannot get vehicle status: Vehicle {vehicle_serial} not registered")
 
     def vehicle_exists(self, vehicle_serial: str, session: Session) -> bool:
         """Checks if a vehicle exists in the database.
@@ -232,7 +265,7 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
 
     def update_status_of_particular_vehicle(
         self, vehicle_serial: str, new_status: VehicleStatus, session: Session
-    ) -> VehicleStatusData:
+    ) -> None:
         """Updates the status of a particular vehicle.
 
         Args:
@@ -244,10 +277,10 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
             VehicleStatusData: Updated vehicle status entry.
         """
         try:
-            vehicle_status = self.get_by_serial(vehicle_serial, session)
+            vehicle_status = self.get_vehicle_status(vehicle_serial, session)
             vehicle_status.status = new_status
             vehicle_status.timestamp = pendulum.now("UTC")
             session.commit()
-            return vehicle_status
+
         except NoResultFound:
-            raise ValueError(f"No vehicle found with serial {vehicle_serial}")
+            raise ValueError(f"Vehicle with serial number {vehicle_serial} not found!")

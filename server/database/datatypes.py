@@ -14,6 +14,9 @@ class SensorType(Enum):
     WEIGHT = "weight"
     FUEL = "fuel"
 
+    def __str__(self):
+        return self.value
+
 
 class VehicleStatus(Enum):
     """Enum for different status states of a vehicle.
@@ -29,3 +32,6 @@ class VehicleStatus(Enum):
     INACTIVE = "inactive"
     MAINTENANCE = "maintenance"
     ERROR = "error"
+
+    def __str__(self):
+        return self.value
