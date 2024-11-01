@@ -1,4 +1,6 @@
 import pendulum
+from database.datatypes import SensorType
+from database.datatypes import VehicleStatus
 from sqlalchemy import Column
 from sqlalchemy import create_engine
 from sqlalchemy import DateTime
@@ -7,9 +9,6 @@ from sqlalchemy import Float
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy.orm import declarative_base
-
-from database.schemas import SensorType
-from database.schemas import VehicleStatus
 
 Base = declarative_base()
 

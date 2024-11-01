@@ -47,3 +47,5 @@ Implement at least 3 API endpoints that:
 - **`uv add sqlalchemy fastapi`**: Adds multiple dependencies for the project to `pyproject.toml`.
 
 - **`uv sync`**: Synchronizes the project dependencies as defined in the configuration.
+
+- **`uv remove --optional dev reorder-python-imports`**
