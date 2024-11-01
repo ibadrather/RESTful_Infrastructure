@@ -41,9 +41,9 @@ def get_session():
 
 
 # Create repositories and VehicleDataManager instance
-sensor_repo = SensorRepository()
-vehicle_status_repo = VehicleStatusRepository()
-vehicle_data_manager = VehicleDataManager(sensor_repo, vehicle_status_repo)
+sensor_data_repository = SensorRepository()
+vehicle_status_repository = VehicleStatusRepository()
+vehicle_data_manager = VehicleDataManager(sensor_data_repository, vehicle_status_repository)
 
 """
 **********************************
@@ -53,25 +53,35 @@ vehicle_data_manager = VehicleDataManager(sensor_repo, vehicle_status_repo)
 app = FastAPI(
     title="RESTful Infrastructure Backend API",
     description="""
-    This is the backend API to store Vehicle Sensor and Status Data.
-    You can add sensor data for various vehicles and change status their status.
+    This RESTful API serves as a backend for managing vehicle sensor and status data. It enables the registration of vehicles, updates to their statuses, and the recording and retrieval of sensor data associated with those vehicles.
+
+    ## Functionalities:
+
+    - # Vehicle Management:
+        - Register new vehicles with unique serial numbers.
+        - Update the operational status of registered vehicles.
+        - Retrieve a list of all registered vehicles.
+        - Fetch the current status of a specific vehicle.
+
+    - # Sensor Data Management:
+        - Record various types of sensor data for vehicles.
+        - Retrieve all sensor data for a specific vehicle.
+        - Access specific sensor data based on vehicle and sensor type.
+
+    This API is designed for ease of integration with frontend applications and data analytics systems, providing a structured way to manage vehicle-related information effectively.
     """,
-    version="0.4.1",
+    version="0.5.0",
     contact={
         "name": "Ibad Rather",
         "email": "ibad.rather.ir@gmail.com",
-        "url": "https://www.linkedin.com/in/ibad-rather/",  # Optional LinkedIn or any profile link
+        "url": "https://www.linkedin.com/in/ibad-rather/",
     },
 )
 
 
 @app.get("/")
 def home():
-    """Redirect to Swagger UI.
-
-    Returns:
-        RedirectResponse: Redirects to the /docs route.
-    """
+    """Redirect to Swagger UI."""
     return RedirectResponse(url="/docs")
 
 
@@ -82,21 +92,7 @@ def home():
 """
 
 
-@app.post("/add-sensor-data/")
-def record_sensor_data_for_vehicle(data: SensorData, session: Session = Depends(get_session)):
-    """Record sensor data for a specific vehicle."""
-    logger.debug(f"Recording sensor data for vehicle {data.vehicle_serial}")
-    try:
-        vehicle_data_manager.record_sensor_data_for_vehicle(
-            data.vehicle_serial, data.sensor_type, data.sensor_data, session
-        )
-        return {"status": "success", "message": "Sensor data recorded."}
-    except Exception as e:
-        session.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.post("/register-vehicle/")
+@app.post("/register-new-vehicle/", tags=["Vehicle Management"])
 def add_new_vehicle(vehicle_serial: str, session: Session = Depends(get_session)):
     """Register a new vehicle with a unique serial number."""
     logger.debug(f"Registering new vehicle with serial number {vehicle_serial}")
@@ -115,7 +111,7 @@ def add_new_vehicle(vehicle_serial: str, session: Session = Depends(get_session)
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.post("/vehicle-status/")
+@app.post("/update-vehicle-status/", tags=["Vehicle Management"])
 def update_vehicle_status(data: VehicleStatusData, session: Session = Depends(get_session)):
     """Update the status of a specific vehicle."""
     logger.debug(f"Updating status for vehicle {data.vehicle_serial}")
@@ -133,6 +129,20 @@ def update_vehicle_status(data: VehicleStatusData, session: Session = Depends(ge
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.post("/add-sensor-data/", tags=["Sensor Data Management"])
+def record_sensor_data_for_vehicle(data: SensorData, session: Session = Depends(get_session)):
+    """Record sensor data for a specific vehicle."""
+    logger.debug(f"Recording sensor data for vehicle {data.vehicle_serial}")
+    try:
+        vehicle_data_manager.record_sensor_data_for_vehicle(
+            data.vehicle_serial, data.sensor_type, data.sensor_data, session
+        )
+        return {"status": "success", "message": "Sensor data recorded."}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 """
 **********************************
 *** GET Methods
@@ -140,7 +150,7 @@ def update_vehicle_status(data: VehicleStatusData, session: Session = Depends(ge
 """
 
 
-@app.get("/all-vehicles")
+@app.get("/get-all-vehicles", tags=["Vehicle Management"])
 def retrieve_all_vehicle_serial_numbers(session: Session = Depends(get_session)) -> List[str]:
     """Retrieve a list of all registered vehicles."""
     logger.debug("Fetching all registered vehicles")
@@ -155,7 +165,7 @@ def retrieve_all_vehicle_serial_numbers(session: Session = Depends(get_session))
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.get("/vehicle-status/")
+@app.get("/get-vehicle-status/", tags=["Vehicle Management"])
 def retrieve_vehicle_status(vehicle_serial: str, session: Session = Depends(get_session)):
     """Get the status of a specific vehicle."""
     logger.debug(f"Fetching status for vehicle {vehicle_serial}")
@@ -174,20 +184,7 @@ def retrieve_vehicle_status(vehicle_serial: str, session: Session = Depends(get_
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.get("/sensor-data/{vehicle_serial}/{sensor_type}")
-def get_particular_sensor_data(vehicle_serial: str, sensor_type: SensorType, session: Session = Depends(get_session)):
-    """Retrieve specific sensor data for a vehicle."""
-    logger.debug(f"Fetching {sensor_type} sensor data for vehicle {vehicle_serial}")
-    try:
-        sensor_data = vehicle_data_manager.fetch_specific_sensor_data_for_vehicle(vehicle_serial, sensor_type, session)
-        logger.debug(f"Fetched sensor data for vehicle {vehicle_serial}")
-        return sensor_data
-    except Exception as e:
-        logger.error(f"Failed to fetch sensor data: {e}")
-        raise HTTPException(status_code=404, detail=str(e))
-
-
-@app.get("/sensor-data/{vehicle_serial}")
+@app.get("/get-sensor-data/{vehicle_serial}", tags=["Sensor Data Management"])
 def get_all_sensor_data(vehicle_serial: str, session: Session = Depends(get_session)):
     """Retrieve all sensor data for a vehicle."""
     logger.debug(f"Fetching all sensor data for vehicle {vehicle_serial}")
@@ -197,4 +194,17 @@ def get_all_sensor_data(vehicle_serial: str, session: Session = Depends(get_sess
         return all_data
     except Exception as e:
         logger.error(f"Failed to fetch all sensor data: {e}")
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.get("/get-sensor-data/{vehicle_serial}/{sensor_type}", tags=["Sensor Data Management"])
+def get_particular_sensor_data(vehicle_serial: str, sensor_type: SensorType, session: Session = Depends(get_session)):
+    """Retrieve specific sensor data for a vehicle."""
+    logger.debug(f"Fetching {sensor_type} sensor data for vehicle {vehicle_serial}")
+    try:
+        sensor_data = vehicle_data_manager.fetch_specific_sensor_data_for_vehicle(vehicle_serial, sensor_type, session)
+        logger.debug(f"Fetched sensor data for vehicle {vehicle_serial}")
+        return sensor_data
+    except Exception as e:
+        logger.error(f"Failed to fetch sensor data: {e}")
         raise HTTPException(status_code=404, detail=str(e))

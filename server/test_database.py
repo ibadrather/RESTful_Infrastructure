@@ -65,11 +65,11 @@ if __name__ == "__main__":
     db = DatabaseSession("sqlite:///vehicle_data.db")
 
     # Create repositories
-    sensor_repo = SensorRepository()
-    vehicle_status_repo = VehicleStatusRepository()
+    sensor_data_repository = SensorRepository()
+    vehicle_status_repository = VehicleStatusRepository()
 
     # Create service
-    vehicle_data_manager = VehicleDataManager(sensor_repo, vehicle_status_repo)
+    vehicle_data_manager = VehicleDataManager(sensor_data_repository, vehicle_status_repository)
 
     # Use the first session from the generator
     session = next(db.get_session())
