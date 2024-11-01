@@ -1,7 +1,8 @@
 from typing import Any
 from typing import Dict
-from typing import Tuple
+from typing import List
 
+from conflog import logger
 from database.datatypes import SensorType
 from database.datatypes import VehicleStatus
 from database.models import SensorData
@@ -11,25 +12,21 @@ from database.repository import VehicleStatusRepository
 from sqlalchemy.orm import Session
 
 
-class VehicleMonitoringService:
-    """Service for managing vehicle registration, status updates, and sensor data records.
+class VehicleDataManager:
+    """Manages vehicle data in the relevent databases for vehicle registration, status updates, and sensor data records."""
 
-    Attributes:
-        sensor_repo (SensorRepository): Repository for managing sensor data.
-        vehicle_status_repo (VehicleStatusRepository): Repository for managing vehicle status.
-    """
-
-    def __init__(self, sensor_repo: SensorRepository, vehicle_status_repo: VehicleStatusRepository):
-        """Initializes VehicleMonitoringService with repositories for sensor data and vehicle status.
+    def __init__(self, sensor_data_repository: SensorRepository, vehicle_status_repository: VehicleStatusRepository):
+        """Initializes VehicleDataManager with repositories for sensor data and vehicle status.
 
         Args:
-            sensor_repo (SensorRepository): The repository for sensor data.
-            vehicle_status_repo (VehicleStatusRepository): The repository for vehicle status data.
+            sensor_data_repository (SensorRepository): The repository for sensor data.
+            vehicle_status_repository (VehicleStatusRepository): The repository for vehicle status data.
         """
-        self.sensor_repo = sensor_repo
-        self.vehicle_status_repo = vehicle_status_repo
+        self.sensor_data_repository = sensor_data_repository
+        self.vehicle_status_repository = vehicle_status_repository
+        self.logger = logger.getChild(self.__class__.__name__)
 
-    def register_vehicle(self, vehicle_serial: str, session: Session) -> Tuple[VehicleStatusData, bool]:
+    def register_new_vehicle_and_initialize_status(self, vehicle_serial: str, session: Session) -> bool:
         """Registers a new vehicle with an initial status.
 
         Args:
@@ -38,17 +35,10 @@ class VehicleMonitoringService:
 
         Returns:
             Tuple[VehicleStatusData, bool]: The vehicle status data and a boolean indicating if a new record was created.
-
-        Raises:
-            Exception: If vehicle registration fails.
         """
-        try:
-            return self.vehicle_status_repo.create_vehicle(vehicle_serial, session)
-        except Exception as e:
-            print(f"Error registering vehicle: {e}")
-            raise
+        return self.vehicle_status_repository.create_vehicle(vehicle_serial, session)
 
-    def update_status_of_particular_vehicle(self, vehicle_serial: str, new_status: VehicleStatus, session: Session):
+    def update_vehicle_status_by_serial_number(self, vehicle_serial: str, new_status: VehicleStatus, session: Session):
         """Updates the status of a specific vehicle.
 
         Args:
@@ -58,13 +48,10 @@ class VehicleMonitoringService:
 
         Returns:
             VehicleStatusData: Updated vehicle status data.
-
-        Raises:
-            ValueError: If the vehicle is not found.
         """
-        return self.vehicle_status_repo.update_status_of_particular_vehicle(vehicle_serial, new_status, session)
+        return self.vehicle_status_repository.update_status_of_particular_vehicle(vehicle_serial, new_status, session)
 
-    def record_sensor_data(
+    def record_sensor_data_for_vehicle(
         self, vehicle_serial: str, sensor_type: SensorType, value: float, session: Session
     ) -> SensorData:
         """Records sensor data for a specific vehicle.
@@ -77,17 +64,15 @@ class VehicleMonitoringService:
 
         Returns:
             SensorData: The recorded sensor data entry.
-
-        Raises:
-            ValueError: If the vehicle is not registered.
         """
+        self.logger.debug(f"Recording sensor data for vehicle {vehicle_serial} - Sensor: {sensor_type}, Value: {value}")
         # First check if vehicle exists
-        self.vehicle_status_repo.get_vehicle_status(vehicle_serial, session)
-
+        self.vehicle_status_repository.get_vehicle_status(vehicle_serial, session)
         sensor_data = SensorData(vehicle_serial=vehicle_serial, sensor_type=sensor_type, value=value)
-        return self.sensor_repo.add(sensor_data, session)
 
-    def get_particular_sensor_data_for_vehicle_with_serial_number(
+        return self.sensor_data_repository.insert_sensor_data_entry(sensor_data, session)
+
+    def fetch_specific_sensor_data_for_vehicle(
         self, vehicle_serial: str, sensor_type: SensorType, session: Session
     ) -> Dict[str, Any]:
         """Fetches specific sensor data for a vehicle based on sensor type.
@@ -100,10 +85,10 @@ class VehicleMonitoringService:
         Returns:
             Dict[str, Any]: Dictionary containing organized sensor data for the specified sensor type.
         """
+        self.logger.debug(f"Fetching {sensor_type} sensor data for vehicle {vehicle_serial}")
+        return self.sensor_data_repository.fetch_specific_sensor_data_for_vehicle(vehicle_serial, sensor_type, session)
 
-        return self.sensor_repo.get_particular_sensor_data_for_vehicle(vehicle_serial, sensor_type, session)
-
-    def get_all_sensor_data_for_vehicle_serial(self, vehicle_serial: str, session: Session):
+    def fetch_all_sensor_data_for_vehicle(self, vehicle_serial: str, session: Session):
         """Fetches all sensor data for a specific vehicle.
 
         Args:
@@ -112,16 +97,33 @@ class VehicleMonitoringService:
 
         Returns:
             Dict[str, Any]: Dictionary containing organized sensor data for all sensors of the vehicle.
-
-        Raises:
-            Exception: If data retrieval fails.
         """
-
-        all_sensor_data = self.sensor_repo.get_all_sensor_data_for_vehicle(
+        self.logger.debug(f"Fetching all sensor data for vehicle {vehicle_serial}")
+        return self.sensor_data_repository.fetch_all_sensor_data_for_vehicle(
             vehicle_serial=vehicle_serial, session=session
         )
 
-        return all_sensor_data
+    def retrieve_vehicle_status(self, vehicle_serial: str, session: Session) -> VehicleStatusData:
+        """Retrieves the current status of a specific vehicle.
 
-    def get_vehicle_status(self, vehicle_serial: str, session: Session) -> VehicleStatusData:
-        return self.vehicle_status_repo.get_vehicle_status(vehicle_serial, session)
+        Args:
+            vehicle_serial (str): The unique identifier for the vehicle.
+            session (Session): SQLAlchemy session for database transactions.
+
+        Returns:
+            VehicleStatusData: The current status data of the vehicle.
+        """
+        self.logger.debug(f"Retrieving status for vehicle {vehicle_serial}")
+        return self.vehicle_status_repository.get_vehicle_status(vehicle_serial, session)
+
+    def retrieve_all_vehicle_serial_numbers(self, session: Session) -> List[str]:
+        """Retrieves a list of all vehicle serial numbers in the database.
+
+        Args:
+            session (Session): SQLAlchemy session for database transactions.
+
+        Returns:
+            List[str]: List of all vehicle serial numbers.
+        """
+        self.logger.debug("Retrieving all vehicle serial numbers")
+        return self.vehicle_status_repository.get_all_vehicles(session)
