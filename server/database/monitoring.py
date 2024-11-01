@@ -42,11 +42,7 @@ class VehicleMonitoringService:
         Raises:
             Exception: If vehicle registration fails.
         """
-        try:
-            return self.vehicle_status_repo.create_vehicle(vehicle_serial, session)
-        except Exception as e:
-            print(f"Error registering vehicle: {e}")
-            raise
+        return self.vehicle_status_repo.create_vehicle(vehicle_serial, session)
 
     def update_status_of_particular_vehicle(self, vehicle_serial: str, new_status: VehicleStatus, session: Session):
         """Updates the status of a specific vehicle.

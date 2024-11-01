@@ -247,7 +247,7 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
             # First check if vehicle exists
             existing_vehicle = session.query(VehicleStatusData).filter_by(vehicle_serial=vehicle_serial).first()
             if existing_vehicle:
-                return existing_vehicle, False
+                raise ValueError(f"Vehicle with serial number: {vehicle_serial} already exists.")
 
             # Create new vehicle if it doesn't exist
             vehicle_status = VehicleStatusData(
@@ -259,9 +259,9 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
             session.commit()
             return vehicle_status, True
 
-        except Exception:
+        except Exception as e:
             session.rollback()
-            raise
+            raise e
 
     def update_status_of_particular_vehicle(
         self, vehicle_serial: str, new_status: VehicleStatus, session: Session

@@ -11,7 +11,20 @@ from fastapi import HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
-app = FastAPI()
+
+app = FastAPI(
+    title="RESTful Infrastructure Backend API",
+    description="""
+    This is the backend API to store Vehicle Sensor and Status Data.
+    You can add sensor data for various vehicles and change status their status.
+    """,
+    version="0.4.1",
+    contact={
+        "name": "Ibad Rather",
+        "email": "ibad.rather.ir@gmail.com",
+        "url": "https://www.linkedin.com/in/ibad-rather/",  # Optional LinkedIn or any profile link
+    },
+)
 
 
 # Dependency for database session
@@ -40,6 +53,20 @@ def record_sensor_data(data: SensorData, session: Session = Depends(get_session)
     try:
         monitoring_service.record_sensor_data(data.vehicle_serial, data.sensor_type, data.sensor_data, session)
         return {"status": "success", "message": "Sensor data recorded."}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/register-vehicle/")
+def add_new_vehicle(vehicle_serial: str, session: Session = Depends(get_session)):
+    try:
+        monitoring_service.register_vehicle(vehicle_serial, session)
+        return {
+            "status": "success",
+            "message": f"Registered new vehicle with serial number {vehicle_serial}.",
+        }
+
     except Exception as e:
         session.rollback()
         raise HTTPException(status_code=400, detail=str(e))
