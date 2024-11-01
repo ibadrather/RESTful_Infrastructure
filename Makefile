@@ -33,3 +33,7 @@ test:
 	clear
 	@echo "Running tests..."
 	pytest server/tests
+
+
+run:
+	. server/.venv/bin/activate && python server/main.py
