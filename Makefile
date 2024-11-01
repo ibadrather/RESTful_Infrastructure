@@ -36,4 +36,4 @@ test:
 
 
 run:
-	. server/.venv/bin/activate && python server/main.py
+	python server/main.py

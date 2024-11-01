@@ -8,6 +8,7 @@ from database.session import DatabaseSession
 from fastapi import Depends
 from fastapi import FastAPI
 from fastapi import HTTPException
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 app = FastAPI()
@@ -15,7 +16,7 @@ app = FastAPI()
 
 # Dependency for database session
 def get_session():
-    db = DatabaseSession("sqlite:///vehicle_data.db")
+    db = DatabaseSession("sqlite:///server/vehicle_data.db")
     session = next(db.get_session())
     try:
         yield session
@@ -27,6 +28,11 @@ def get_session():
 sensor_repo = SensorRepository()
 vehicle_status_repo = VehicleStatusRepository()
 monitoring_service = VehicleMonitoringService(sensor_repo, vehicle_status_repo)
+
+
+@app.get("/")
+def home():
+    return RedirectResponse(url="/docs")
 
 
 @app.post("/sensor-data/")
