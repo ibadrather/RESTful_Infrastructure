@@ -4,6 +4,8 @@
 
 [Server API](https://restful-infrastructure.onrender.com/docs)
 
+This API is hosted on a free instance from Render.com, which may shut down after periods of inactivity. When this happens, it may take a few minutes to restart. Thank you for your patience while the API loads.
+
 ## A. Programming Task – REST API - Server and Client
 
 ### Task Concept

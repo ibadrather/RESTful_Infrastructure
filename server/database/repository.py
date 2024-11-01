@@ -8,6 +8,7 @@ from typing import TypeVar
 from typing import Union
 
 import pendulum
+from conflog import logger
 from database.datatypes import SensorType
 from database.datatypes import VehicleStatus
 from database.models import SensorData
@@ -41,6 +42,8 @@ class SensorRepository(Repository[SensorData]):
         get_particular_sensor_data_for_vehicle: Retrieves data for a specific sensor type on a vehicle.
         get_all_sensor_data_for_vehicle: Retrieves all sensor data for a vehicle.
     """
+
+    logger = logger.getChild("SensorRepository")
 
     def add(self, item: SensorData, session: Session) -> Union[SensorData, None]:
         """Adds a new SensorData entry to the database.
@@ -232,7 +235,7 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
         """
         return session.query(VehicleStatusData).filter_by(vehicle_serial=vehicle_serial).first() is not None
 
-    def create_vehicle(self, vehicle_serial: str, session: Session) -> tuple[VehicleStatusData, bool]:
+    def create_vehicle(self, vehicle_serial: str, session: Session) -> bool:
         """Creates a new vehicle entry if it doesn't exist.
 
         Args:
@@ -240,8 +243,7 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
             session (Session): The SQLAlchemy session object.
 
         Returns:
-            tuple[VehicleStatusData, bool]: Tuple of vehicle status entry and a boolean
-            indicating if a new entry was created.
+            bool: a boolean indicating if a new entry was created.
         """
         try:
             # First check if vehicle exists
@@ -257,7 +259,7 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
             )
             session.add(vehicle_status)
             session.commit()
-            return vehicle_status, True
+            return True
 
         except Exception as e:
             session.rollback()
@@ -284,3 +286,12 @@ class VehicleStatusRepository(Repository[VehicleStatusData]):
 
         except NoResultFound:
             raise ValueError(f"Vehicle with serial number {vehicle_serial} not found!")
+
+    def get_all_vehicles(self, session: Session) -> List[str]:
+        vehicles = session.query(VehicleStatusData).all()
+        vehicles = self._format_all_vehicle_serial_number(vehicles)
+        return vehicles
+
+    @staticmethod
+    def _format_all_vehicle_serial_number(vehicles: List[VehicleStatusData]) -> List[str]:
+        return [str(vehicle.vehicle_serial) for vehicle in vehicles]
