@@ -64,3 +64,9 @@ mkdir build && cd build
 cmake ..
 make
 ./vehicle_client
+
+
+
+cd vehicle_client && mkdir build && cd build && cmake .. && make && ./vehicle_client
+
+cd vehicle_client && rm -r build  && mkdir build && cd build && cmake .. && make && ./vehicle_client

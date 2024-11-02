@@ -49,26 +49,5 @@ run-api:
 # C++ Targets
 ################
 
-# Project settings
-CXX_PROJECT_NAME = vehicle_client
-CXX_SRC_DIR = vehicle_client
-CXX_BUILD_DIR = vehicle_client/build
-
-# C++ build target
-build:
-	mkdir -p $(CXX_BUILD_DIR)
-	cd $(CXX_BUILD_DIR) && cmake ../$(CXX_SRC_DIR)
-	cd $(CXX_BUILD_DIR) && make
-
-# C++ run target
-run-cxx: build
-	cd $(CXX_BUILD_DIR) && ./$(CXX_BUILD_DIR)/$(CXX_PROJECT_NAME)
-
-# Clean C++ build artifacts
-clean-cxx:
-	rm -rf $(CXX_BUILD_DIR)
-
-
-# Clean all
-clean: clean-cxx
-	rm -rf server/__pycache__ server/*.egg-info
+build-run-client:
+	cd vehicle_client && rm -r build  && mkdir build && cd build && cmake .. && make && ./vehicle_client
