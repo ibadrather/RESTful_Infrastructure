@@ -1,5 +1,5 @@
 server/.venv
-
+vehicle_client/build
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
