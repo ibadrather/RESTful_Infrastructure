@@ -41,6 +41,28 @@ public:
      */
     bool addSensorData(SensorType sensorType, float sensorData, const std::string& vehicleSerial);
 
+    /**
+     * @brief Retrieves the current status of a specific vehicle
+     *
+     * Makes an HTTP GET request to fetch the current status of a vehicle identified by
+     * its serial number. The function handles the API response and returns the status
+     * information.
+     *
+     * @param vehicleSerial The unique serial number of the vehicle to query
+     * @return std::pair<bool, std::string> A pair containing:
+     *         - bool: true if the request was successful, false otherwise
+     *         - std::string: The vehicle's status if successful, error message if failed
+     *
+     * @throws std::runtime_error If CURL initialization fails
+     *
+     * Example:
+     *   auto [success, status] = client.getVehicleStatus("VEH123");
+     *   if (success) {
+     *     std::cout << "Vehicle status: " << status << std::endl;
+     *   }
+     */
+    std::pair<bool, std::string> getVehicleStatus(const std::string& vehicleSerial);
+
 private:
     std::string baseUrl; ///< The base URL for the API server.
 

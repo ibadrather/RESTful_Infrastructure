@@ -106,3 +106,44 @@ bool VehicleClient::sendRequest(const std::string& endpoint, const std::string& 
 
     return success;
 }
+
+std::pair<bool, std::string> VehicleClient::getVehicleStatus(const std::string& vehicleSerial) {
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+        throw std::runtime_error("Failed to initialize CURL");
+    }
+
+    std::string responseString;
+    std::string url = baseUrl + "/get-vehicle-status/?vehicle_serial=" + vehicleSerial;
+
+    // Configure CURL
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseString);
+
+    // Perform request
+    CURLcode res = curl_easy_perform(curl);
+
+    if (res != CURLE_OK) {
+        curl_easy_cleanup(curl);
+        return {false, std::string("Request failed: ") + curl_easy_strerror(res)};
+    }
+
+    // Clean up CURL
+    curl_easy_cleanup(curl);
+
+    try {
+        auto responseJson = json::parse(responseString);
+
+        if (responseJson.contains("status") && responseJson["status"] == "success") {
+            return {true, responseJson["message"]};
+        } else if (responseJson.contains("detail")) {
+            return {false, responseJson["detail"]};
+        } else {
+            return {false, "Unexpected response format"};
+        }
+    } catch (json::parse_error& e) {
+        return {false, std::string("Failed to parse response: ") + e.what()};
+    }
+}

@@ -22,18 +22,20 @@ int main() {
     VehicleClient client(apiUrl);
 
     while (keepRunning) {
+        std::cout << "\n==================================" << std::endl;
+
         // Attempt to send sensor data
-        if (client.addSensorData(SensorType::TEMPERATURE, 93.5, vehicleSerialNumber)) {
-            std::cout << "Temperature data sent successfully!" << std::endl;
+        if (!client.addSensorData(SensorType::TEMPERATURE, 93.5, vehicleSerialNumber)) {
+            std::cout << "Sending temperature data failed!!!" << std::endl;
         }
 
-        // Fetch and print vehicle status
-        // std::string status;
-        // if (client.getVehicleStatus(vehicleSerialNumber, status)) {
-        //     std::cout << "Vehicle Status: " << status << std::endl;
-        // } else {
-        //     std::cerr << "Failed to retrieve vehicle status." << std::endl;
-        // }
+        // Get vehicle status using C++17 structured binding
+        auto [status_success, vehicle_status] = client.getVehicleStatus(vehicleSerialNumber);
+        if (status_success) {  // Note: changed from status_sucess to status_success
+            std::cout << "Vehicle Status: " << vehicle_status << std::endl;
+        } else {
+            std::cerr << "Failed to retrieve vehicle status: " << vehicle_status << std::endl;
+        }
 
         // Wait before repeating
         std::this_thread::sleep_for(std::chrono::seconds(5));

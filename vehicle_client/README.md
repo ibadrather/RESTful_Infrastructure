@@ -101,3 +101,9 @@ Using `json.hpp` helps the program parse and understand responses from the API i
 ## Future Extensions
 
 The modular structure of `VehicleClient` allows for easy extension. Additional API endpoints can be added with new methods in the `VehicleClient` class. Each endpoint can use `sendRequest` to handle requests and response parsing, making it straightforward to add new API functionalities.
+
+
+# Deps
+```bash
+  sudo apt-get install clang-format clang-tidy cppcheck
+```
