@@ -2,6 +2,7 @@
 #define VEHICLE_CLIENT_HPP
 
 #include <string>
+
 #include "SensorType.hpp"
 
 /**
@@ -12,8 +13,9 @@
  * It manages API requests and processes server responses to ensure data
  * is correctly recorded.
  */
-class VehicleClient {
-public:
+class VehicleClient
+{
+   public:
     /**
      * @brief Constructs a VehicleClient with a specified base URL for API requests.
      *
@@ -63,8 +65,8 @@ public:
      */
     std::pair<bool, std::string> getVehicleStatus(const std::string& vehicleSerial);
 
-private:
-    std::string baseUrl; ///< The base URL for the API server.
+   private:
+    std::string baseUrl;  ///< The base URL for the API server.
 
     /**
      * @brief Retrieves the current timestamp in ISO 8601 format.
@@ -91,4 +93,4 @@ private:
     bool sendRequest(const std::string& endpoint, const std::string& jsonPayload);
 };
 
-#endif // VEHICLE_CLIENT_HPP
+#endif  // VEHICLE_CLIENT_HPP

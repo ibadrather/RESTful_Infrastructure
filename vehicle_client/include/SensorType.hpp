@@ -3,19 +3,27 @@
 
 #include <string>
 
-enum class SensorType {
+enum class SensorType
+{
     TEMPERATURE,
     WEIGHT,
     FUEL
+
 };
 
-inline std::string sensorTypeToString(SensorType type) {
-    switch (type) {
-        case SensorType::TEMPERATURE: return "temperature";
-        case SensorType::WEIGHT: return "weight";
-        case SensorType::FUEL: return "fuel";
-        default: return "unknown";
+inline std::string sensorTypeToString(SensorType type)
+{
+    switch (type)
+    {
+        case SensorType::TEMPERATURE:
+            return "temperature";
+        case SensorType::WEIGHT:
+            return "weight";
+        case SensorType::FUEL:
+            return "fuel";
+        default:
+            return "unknown";
     }
 }
 
-#endif // SENSOR_TYPE_HPP
+#endif  // SENSOR_TYPE_HPP

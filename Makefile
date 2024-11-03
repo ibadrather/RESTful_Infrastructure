@@ -48,9 +48,15 @@ run-api:
 ################
 # C++ Targets
 ################
-
 build-run-client:
-	cd vehicle_client && cd build && cmake .. && make && ./vehicle_client
+	@if [ -d "vehicle_client/build" ]; then rm -r vehicle_client/build; fi
+	mkdir -p vehicle_client/build
+	cd vehicle_client/build && cmake .. && make && ./vehicle_client
 
 build-run-client-scratch:
-	cd vehicle_client && rm -r build  && mkdir build && cd build && cmake .. && make && ./vehicle_client
+	rm -rf vehicle_client/build
+	mkdir -p vehicle_client/build
+	cd vehicle_client/build && cmake .. && make && ./vehicle_client
+
+format-cpp:
+	find vehicle_client/ \( -name "*.cpp" -o -name "*.hpp" \) -not -name "json.hpp" -not -path "vehicle_client/build/*" -exec clang-format -i {} +

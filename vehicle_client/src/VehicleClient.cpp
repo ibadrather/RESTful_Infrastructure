@@ -1,63 +1,82 @@
 #include "VehicleClient.hpp"
-#include "json.hpp"
-#include <iostream>
+
+#include <curl/curl.h>
+
 #include <chrono>
 #include <ctime>
-#include <curl/curl.h>
+#include <iostream>
 #include <sstream>
+
+#include "json.hpp"
 
 using json = nlohmann::json;
 
-namespace {
-
+namespace
+{
 // Function to handle CURL write callback
-size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp)
+{
     ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
 }
 
-} // unnamed namespace
+}  // unnamed namespace
 
-VehicleClient::VehicleClient(const std::string& baseUrl) : baseUrl(baseUrl) {
+VehicleClient::VehicleClient(const std::string& baseUrl) : baseUrl(baseUrl)
+{
     curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
-VehicleClient::~VehicleClient() {
+VehicleClient::~VehicleClient()
+{
     curl_global_cleanup();
 }
 
-bool VehicleClient::addSensorData(SensorType sensorType, float sensorData, const std::string& vehicleSerial) {
+bool VehicleClient::addSensorData(SensorType sensorType, float sensorData,
+                                  const std::string& vehicleSerial)
+{
     std::string timestamp = getCurrentTimestamp();
     std::string sensorTypeStr = sensorTypeToString(sensorType);
 
     // Format JSON payload
-    std::string jsonPayload = "{"
-        "\"sensor_type\": \"" + sensorTypeStr + "\","
-        "\"timestamp\": \"" + timestamp + "\","
-        "\"sensor_data\": " + std::to_string(sensorData) + ","
-        "\"vehicle_serial\": \"" + vehicleSerial + "\""
-    "}";
+    std::string jsonPayload =
+        "{"
+        "\"sensor_type\": \"" +
+        sensorTypeStr +
+        "\","
+        "\"timestamp\": \"" +
+        timestamp +
+        "\","
+        "\"sensor_data\": " +
+        std::to_string(sensorData) +
+        ","
+        "\"vehicle_serial\": \"" +
+        vehicleSerial +
+        "\""
+        "}";
 
     return sendRequest("/add-sensor-data/", jsonPayload);
 }
 
-std::string VehicleClient::getCurrentTimestamp() const {
+std::string VehicleClient::getCurrentTimestamp() const
+{
     using namespace std::chrono;
     auto now = system_clock::now();
     auto now_time_t = system_clock::to_time_t(now);
     auto now_us = duration_cast<microseconds>(now.time_since_epoch()) % 1000000;
 
     std::ostringstream oss;
-    oss << std::put_time(std::gmtime(&now_time_t), "%Y-%m-%dT%H:%M:%S")
-        << '.' << std::setfill('0') << std::setw(6) << now_us.count() << 'Z';
+    oss << std::put_time(std::gmtime(&now_time_t), "%Y-%m-%dT%H:%M:%S") << '.' << std::setfill('0')
+        << std::setw(6) << now_us.count() << 'Z';
 
     return oss.str();
 }
 
-
-bool VehicleClient::sendRequest(const std::string& endpoint, const std::string& jsonPayload) {
+bool VehicleClient::sendRequest(const std::string& endpoint, const std::string& jsonPayload)
+{
     CURL* curl = curl_easy_init();
-    if (!curl) {
+    if (!curl)
+    {
         std::cerr << "Failed to initialize CURL" << std::endl;
         return false;
     }
@@ -79,22 +98,33 @@ bool VehicleClient::sendRequest(const std::string& endpoint, const std::string& 
     res = curl_easy_perform(curl);
     bool success = false;
 
-    if (res != CURLE_OK) {
+    if (res != CURLE_OK)
+    {
         std::cerr << "Request failed: " << curl_easy_strerror(res) << std::endl;
-    } else {
-        try {
+    }
+    else
+    {
+        try
+        {
             // Parse the response JSON
             auto responseJson = json::parse(responseString);
 
-            if (responseJson.contains("status") && responseJson["status"] == "success") {
+            if (responseJson.contains("status") && responseJson["status"] == "success")
+            {
                 std::cout << "Success: " << responseJson["message"] << std::endl;
                 success = true;
-            } else if (responseJson.contains("detail")) {
+            }
+            else if (responseJson.contains("detail"))
+            {
                 std::cerr << "Error: " << responseJson["detail"] << std::endl;
-            } else {
+            }
+            else
+            {
                 std::cerr << "Unexpected response: " << responseString << std::endl;
             }
-        } catch (json::parse_error& e) {
+        }
+        catch (json::parse_error& e)
+        {
             std::cerr << "Failed to parse JSON response: " << e.what() << std::endl;
             std::cerr << "Raw response: " << responseString << std::endl;
         }
@@ -107,9 +137,11 @@ bool VehicleClient::sendRequest(const std::string& endpoint, const std::string& 
     return success;
 }
 
-std::pair<bool, std::string> VehicleClient::getVehicleStatus(const std::string& vehicleSerial) {
+std::pair<bool, std::string> VehicleClient::getVehicleStatus(const std::string& vehicleSerial)
+{
     CURL* curl = curl_easy_init();
-    if (!curl) {
+    if (!curl)
+    {
         throw std::runtime_error("Failed to initialize CURL");
     }
 
@@ -125,7 +157,8 @@ std::pair<bool, std::string> VehicleClient::getVehicleStatus(const std::string& 
     // Perform request
     CURLcode res = curl_easy_perform(curl);
 
-    if (res != CURLE_OK) {
+    if (res != CURLE_OK)
+    {
         curl_easy_cleanup(curl);
         return {false, std::string("Request failed: ") + curl_easy_strerror(res)};
     }
@@ -133,17 +166,25 @@ std::pair<bool, std::string> VehicleClient::getVehicleStatus(const std::string& 
     // Clean up CURL
     curl_easy_cleanup(curl);
 
-    try {
+    try
+    {
         auto responseJson = json::parse(responseString);
 
-        if (responseJson.contains("status") && responseJson["status"] == "success") {
+        if (responseJson.contains("status") && responseJson["status"] == "success")
+        {
             return {true, responseJson["message"]};
-        } else if (responseJson.contains("detail")) {
+        }
+        else if (responseJson.contains("detail"))
+        {
             return {false, responseJson["detail"]};
-        } else {
+        }
+        else
+        {
             return {false, "Unexpected response format"};
         }
-    } catch (json::parse_error& e) {
+    }
+    catch (json::parse_error& e)
+    {
         return {false, std::string("Failed to parse response: ") + e.what()};
     }
 }
