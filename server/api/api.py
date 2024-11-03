@@ -135,7 +135,7 @@ def record_sensor_data_for_vehicle(data: SensorData, session: Session = Depends(
     logger.debug(f"Recording sensor data for vehicle {data.vehicle_serial}")
     try:
         vehicle_data_manager.record_sensor_data_for_vehicle(
-            data.vehicle_serial, data.sensor_type, data.sensor_data, session
+            data.vehicle_serial, data.sensor_type, data.sensor_data, data.timestamp, session
         )
         return {"status": "success", "message": "Sensor data recorded."}
     except Exception as e:

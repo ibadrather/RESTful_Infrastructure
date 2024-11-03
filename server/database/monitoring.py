@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 from typing import Dict
 from typing import List
@@ -52,7 +53,7 @@ class VehicleDataManager:
         return self.vehicle_status_repository.update_status_of_particular_vehicle(vehicle_serial, new_status, session)
 
     def record_sensor_data_for_vehicle(
-        self, vehicle_serial: str, sensor_type: SensorType, value: float, session: Session
+        self, vehicle_serial: str, sensor_type: SensorType, value: float, timestamp: datetime, session: Session
     ) -> SensorData:
         """Records sensor data for a specific vehicle.
 
@@ -68,7 +69,9 @@ class VehicleDataManager:
         self.logger.debug(f"Recording sensor data for vehicle {vehicle_serial} - Sensor: {sensor_type}, Value: {value}")
         # First check if vehicle exists
         self.vehicle_status_repository.get_vehicle_status(vehicle_serial, session)
-        sensor_data = SensorData(vehicle_serial=vehicle_serial, sensor_type=sensor_type, value=value)
+        sensor_data = SensorData(
+            vehicle_serial=vehicle_serial, sensor_type=sensor_type, value=value, timestamp=timestamp
+        )
 
         return self.sensor_data_repository.insert_sensor_data_entry(sensor_data, session)
 

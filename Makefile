@@ -50,4 +50,7 @@ run-api:
 ################
 
 build-run-client:
+	cd vehicle_client && cd build && cmake .. && make && ./vehicle_client
+
+build-run-client-scratch:
 	cd vehicle_client && rm -r build  && mkdir build && cd build && cmake .. && make && ./vehicle_client

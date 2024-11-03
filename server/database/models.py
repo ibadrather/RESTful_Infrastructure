@@ -30,7 +30,7 @@ class SensorData(Base):
     vehicle_serial = Column(String, nullable=False)
     sensor_type = Column(Enum(SensorType), nullable=False)
     value = Column(Float, nullable=False)
-    timestamp = Column(DateTime, default=pendulum.now("UTC"), onupdate=pendulum.now("UTC"))
+    timestamp = Column(DateTime)
 
 
 class VehicleStatusData(Base):
