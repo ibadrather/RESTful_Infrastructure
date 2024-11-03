@@ -135,7 +135,7 @@ def record_sensor_data_for_vehicle(data: SensorData, session: Session = Depends(
     logger.debug(f"Recording sensor data for vehicle {data.vehicle_serial}")
     try:
         vehicle_data_manager.record_sensor_data_for_vehicle(
-            data.vehicle_serial, data.sensor_type, data.sensor_data, session
+            data.vehicle_serial, data.sensor_type, data.sensor_data, data.timestamp, session
         )
         return {"status": "success", "message": "Sensor data recorded."}
     except Exception as e:
@@ -173,10 +173,7 @@ def retrieve_vehicle_status(vehicle_serial: str, session: Session = Depends(get_
     try:
         vehicle_status = vehicle_data_manager.retrieve_vehicle_status(vehicle_serial, session)
         logger.debug(f"Fetched status for vehicle {vehicle_serial}")
-        return {
-            "status": "success",
-            "message": f"Vehicle status for vehicle with serial number {vehicle_serial} is {vehicle_status.status}",
-        }
+        return {"status": "success", "message": str(vehicle_status.status)}
 
     except Exception as e:
         logger.error(f"Failed to fetch vehicle status: {e}")

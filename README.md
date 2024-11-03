@@ -55,3 +55,18 @@ Implement at least 3 API endpoints that:
 - **`uv sync`**: Synchronizes the project dependencies as defined in the configuration.
 
 - **`uv remove --optional dev reorder-python-imports`**
+
+
+
+## C++ Vehicle Client
+cd vehicle_client
+mkdir build && cd build
+cmake ..
+make
+./vehicle_client
+
+
+
+cd vehicle_client && mkdir build && cd build && cmake .. && make && ./vehicle_client
+
+cd vehicle_client && rm -r build  && mkdir build && cd build && cmake .. && make && ./vehicle_client

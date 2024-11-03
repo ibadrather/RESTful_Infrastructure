@@ -1,3 +1,7 @@
+################
+# Python Targets
+################
+
 format:
 	clear
 	@echo "Running ruff formatter..."
@@ -8,17 +12,21 @@ format:
 sync:
 	cd server && uv sync
 
-setup:
+py-setup:
 	clear
 	@echo "Setting up the project..."
+
+	# python dependencies
 	pip install uv
 	uv pip compile server/pyproject.toml -o requirements.txt
 	uv pip sync requirements.txt
 	rm requirements.txt
 
-dev-setup:
+py-dev-setup:
 	clear
 	@echo "Setting up the project with dev and test dependencies..."
+
+	# python dependencies
 	pip install uv
 	uv pip compile server/pyproject.toml -o requirements.txt
 	uv pip compile server/pyproject.toml --extra dev -o dev-requirements.txt
@@ -29,11 +37,26 @@ dev-setup:
 	uv pip install pre-commit
 	pre-commit install
 
-test:
+test-server:
 	clear
 	@echo "Running tests..."
 	pytest server/tests
 
-
-run:
+run-api:
 	python server/main.py
+
+################
+# C++ Targets
+################
+build-run-client:
+	@if [ -d "vehicle_client/build" ]; then rm -r vehicle_client/build; fi
+	mkdir -p vehicle_client/build
+	cd vehicle_client/build && cmake .. && make && ./vehicle_client
+
+build-run-client-scratch:
+	rm -rf vehicle_client/build
+	mkdir -p vehicle_client/build
+	cd vehicle_client/build && cmake .. && make && ./vehicle_client
+
+format-cpp:
+	find vehicle_client/ \( -name "*.cpp" -o -name "*.hpp" \) -not -name "json.hpp" -not -path "vehicle_client/build/*" -exec clang-format -i {} +
