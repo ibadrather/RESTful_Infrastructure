@@ -60,3 +60,11 @@ build-run-client-scratch:
 
 format-cpp:
 	find vehicle_client/ \( -name "*.cpp" -o -name "*.hpp" \) -not -name "json.hpp" -not -path "vehicle_client/build/*" -exec clang-format -i {} +
+
+
+####################
+# Frontend Targets
+####################
+run-frontend:
+	clear
+	streamlit run server/frontend.py
