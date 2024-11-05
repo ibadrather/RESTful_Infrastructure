@@ -8,7 +8,7 @@ This API is hosted on a free instance from Render.com, which may shut down after
 
 ## API WebApp
 
-[Server API WebApp: Click here]([https://restful-infrastructure.onrender.com/docs](https://vehicle-rest-api.streamlit.app/))
+[Server API WebApp: Click here](https://restful-infrastructure.onrender.com/docs](https://vehicle-rest-api.streamlit.app/)
 
 
 ## A. Programming Task – REST API - Server and Client
