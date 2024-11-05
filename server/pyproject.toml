@@ -9,6 +9,7 @@ dependencies = [
     "concurrent-log-handler>=0.9.25",
     "email-validator>=2.2.0",
     "fastapi>=0.115.4",
+    "matplotlib>=3.9.2",
     "pendulum>=3.0.0",
     "plotly>=5.24.1",
     "sqlalchemy>=2.0.36",

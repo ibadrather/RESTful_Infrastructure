@@ -1,12 +1,15 @@
 import re
+from datetime import datetime
 from typing import Any
 from typing import List
 from typing import Optional
 from typing import Tuple
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import requests
 import streamlit as st
+from database.datatypes import SensorType
 from database.datatypes import VehicleStatus
 from urllib3.exceptions import NewConnectionError
 
@@ -15,7 +18,7 @@ st.set_page_config(page_title="Vehicle Management System", layout="wide")
 st.title("Vehicle Management System")
 
 # API Configuration
-BASE_URL = "https://restful-infrastructure.onrender.com/"
+BASE_URL = "https://restful-infrastructure.onrender.com"
 
 
 def api_request(method: str, endpoint: str, **kwargs) -> Tuple[bool, Any]:
@@ -24,8 +27,17 @@ def api_request(method: str, endpoint: str, **kwargs) -> Tuple[bool, Any]:
         response = getattr(requests, method)(f"{BASE_URL}/{endpoint}", **kwargs)
         response.raise_for_status()
         return True, response.json()
-    except requests.RequestException as e:
-        st.error(f"API request failed: {e}")
+    except requests.HTTPError:
+        st.error("HTTP error: Cannot fetch data for this request.")
+        return False, None
+    except requests.ConnectionError:
+        st.error("Connection error. Please check your network connection.")
+        return False, None
+    except requests.Timeout:
+        st.error("Request timed out. Please try again later.")
+        return False, None
+    except requests.RequestException:
+        st.error("An error occurred: Please contact admin")
         return False, None
 
 
@@ -132,6 +144,48 @@ def display_register_vehicle():
             st.info("Please enter a vehicle serial number.")
 
 
+def get_sensor_data(vehicle_serial: str, sensor_type: SensorType) -> Tuple[bool, Any]:
+    """Update vehicle status in the database."""
+    return api_request("get", f"get-sensor-data/{vehicle_serial}/{sensor_type}")
+
+
+def display_sensor_data(vehicle_data: List[str]):
+    """Interface for updating and visualizing vehicle sensor data."""
+    st.header("Display Sensor Data")
+
+    # Select vehicle and sensor type for data visualization
+    with st.expander("Select vehicle and sensor type to visualize data", expanded=True):
+        selected_vehicle = st.selectbox("Select Vehicle", vehicle_data, key="select_vehicle_for_sensor_data")
+        selected_sensor = st.selectbox("Sensor Type", list(SensorType), key="sensor_type_selection")
+
+        # Fetch and plot data if button is clicked
+        if st.button("Plot Data", key="plot_data_button"):
+            success, response = get_sensor_data(selected_vehicle, selected_sensor)
+
+            if success and response:
+                # Extract the timestamps and sensor readings from the response
+                timestamps = response.get("TEMPERATURE", [])[0]
+                readings = response.get("TEMPERATURE", [])[1]
+
+                # Convert timestamps to datetime objects for better plotting
+                times = [datetime.fromisoformat(ts) for ts in timestamps]
+
+                # Plot the data
+                fig, ax = plt.subplots(figsize=(6, 3))  # Adjust width and height as needed
+                ax.plot(times, readings, marker="o", linestyle="-", color="b")
+
+                # Format plot
+                ax.set_xlabel("Time")
+                ax.set_ylabel(f"{selected_sensor.name} Readings")
+                ax.set_title(f"{selected_sensor.name} Data for Vehicle {selected_vehicle}")
+                plt.xticks(rotation=45)
+
+                # Display plot in Streamlit
+                st.pyplot(fig)
+            else:
+                st.error("Failed to retrieve sensor data. Please try again.")
+
+
 def main():
     """Main application logic"""
     try:
@@ -148,6 +202,8 @@ def main():
             with right_col:
                 display_register_vehicle()
                 display_vehicle_status(vehicles)
+
+            display_sensor_data(vehicle_data=vehicles)
 
     except (requests.ConnectionError, NewConnectionError):
         st.error("Server connection failed. Please check your connection.")
