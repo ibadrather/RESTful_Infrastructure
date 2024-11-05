@@ -102,7 +102,7 @@ def add_new_vehicle(vehicle_serial: str, session: Session = Depends(get_session)
         logger.debug(f"Vehicle {vehicle_serial} registered successfully")
         return {
             "status": "success",
-            "message": f"Registered new vehicle with serial number {vehicle_serial}.",
+            "content": f"Registered new vehicle with serial number {vehicle_serial}.",
         }
 
     except Exception as e:
@@ -120,7 +120,7 @@ def update_vehicle_status(data: VehicleStatusData, session: Session = Depends(ge
         logger.debug(f"Status updated for vehicle {data.vehicle_serial} to {data.vehicle_status}")
         return {
             "status": "success",
-            "message": f"Status updated for vehicle with serial number {data.vehicle_serial} to {data.vehicle_status.value}.",
+            "content": f"Status updated for vehicle with serial number {data.vehicle_serial} to {data.vehicle_status.value}.",
         }
 
     except Exception as e:
@@ -137,7 +137,7 @@ def record_sensor_data_for_vehicle(data: SensorData, session: Session = Depends(
         vehicle_data_manager.record_sensor_data_for_vehicle(
             data.vehicle_serial, data.sensor_type, data.sensor_data, data.timestamp, session
         )
-        return {"status": "success", "message": "Sensor data recorded."}
+        return {"status": "success", "content": "Sensor data recorded."}
     except Exception as e:
         session.rollback()
         raise HTTPException(status_code=400, detail=str(e))
@@ -173,7 +173,7 @@ def retrieve_vehicle_status(vehicle_serial: str, session: Session = Depends(get_
     try:
         vehicle_status = vehicle_data_manager.retrieve_vehicle_status(vehicle_serial, session)
         logger.debug(f"Fetched status for vehicle {vehicle_serial}")
-        return {"status": "success", "message": str(vehicle_status.status)}
+        return vehicle_status.status
 
     except Exception as e:
         logger.error(f"Failed to fetch vehicle status: {e}")
