@@ -164,8 +164,8 @@ def display_sensor_data(vehicle_data: List[str]):
 
             if success and response:
                 # Extract the timestamps and sensor readings from the response
-                timestamps = response.get("TEMPERATURE", [])[0]
-                readings = response.get("TEMPERATURE", [])[1]
+                timestamps = response.get(str(selected_sensor).upper(), [])[0]
+                readings = response.get(str(selected_sensor).upper(), [])[1]
 
                 # Convert timestamps to datetime objects for better plotting
                 times = [datetime.fromisoformat(ts) for ts in timestamps]
@@ -182,8 +182,13 @@ def display_sensor_data(vehicle_data: List[str]):
 
                 # Display plot in Streamlit
                 st.pyplot(fig)
+
+                # Clear the plot after displaying
+                plt.clf()
+                plt.close(fig)  # Close the figure to free memory
+
             else:
-                st.error("Failed to retrieve sensor data. Please try again.")
+                st.warning("No sensor data present")
 
 
 def main():
