@@ -2,6 +2,8 @@
 
 This guide will walk you through setting up, testing, and running the server component of the RESTful Infrastructure application. You’ll find both `Makefile` targets and direct commands to ensure flexibility in usage.
 
+If you want to read more about Database please go to `server/database/README.md`
+
 ---
 
 ## Dependencies
