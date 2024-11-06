@@ -77,6 +77,11 @@ make build-run-client-scratch
 ./vehicle_client
 ```
 
+> **Note**: If you want to use the locally deployed API, please update the `apiUrl` variable in the `vehicle_client/src/main.cpp` file. Make sure there is no "/" at the end of the URL
+  *Example*:
+  ```cpp
+  std::string apiUrl = "http://0.0.0.0:8000";
+  ```
 
 ## How It Works
 
