@@ -15,6 +15,8 @@ Documentation to specific components of the RESTful infrastructure can be found 
 
   Provides detailed information on setting up and managing the server for the project.
 
+  And the API documentation can be found here: [API Documentation](https://github.com/ibadrather/RESTful_Infrastructure/blob/documentation/server/server/api/README.md)
+
 - **[Database Documentation](https://github.com/ibadrather/RESTful_Infrastructure/blob/documentation/server/server/database/README.md)**
 
   Contains specifications and configuration details for the database.
@@ -33,14 +35,15 @@ Documentation to specific components of the RESTful infrastructure can be found 
 
 ### A. API
 
-The API serves as the backend for the application, handling requests and providing data to the client.
+The API, built using **FastAPI** , serves as the backend for the application, handling client requests for managing vehicle and sensor data. FastAPI was chosen due to its high performance, asynchronous capabilities, and ease of creating interactive documentation with OpenAPI.
 
-- **Documentation** : The API is documented using Swagger UI, which provides an interactive interface to explore and test the API endpoints.
+- **Documentation** : The API is documented using **Swagger UI** , providing an interactive interface for exploring and testing API endpoints.
   - **Swagger UI** : [Access API Documentation here](https://restful-infrastructure.onrender.com/docs)
 
-- **Hosting** : The API is hosted on a free instance through Render.com. Due to this, the API may go into sleep mode during inactivity and could take a few minutes to resume.
+- **Hosting** : The API is hosted on a free instance through Render.com. Due to the free hosting plan, the API may enter sleep mode during inactivity, which may result in a slight delay (a few minutes) when resuming.
 
-- **Further Details** : For more information on setting up or customizing the API, refer to the `server/README.md` file.
+- **Further Details** : For more information on setting up or customizing the API, refer to the `server/README.md`, `server/api/README.md` file.
+
 
 ### B. Client
 
