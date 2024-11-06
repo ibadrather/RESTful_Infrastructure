@@ -1,3 +1,4 @@
+# for streamlit deployment
 pandas
 matplotlib
 streamlit

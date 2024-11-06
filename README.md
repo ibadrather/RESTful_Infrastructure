@@ -1,17 +1,67 @@
-# RESTful Infrastructure
 
-## API
+# RESTful Infrastructure Documentation
 
-[Server API SwaggerUI: Click here](https://restful-infrastructure.onrender.com/docs)
+## Section 1: Information
 
-This API is hosted on a free instance from Render.com, which may shut down after periods of inactivity. When this happens, it may take a few minutes to restart. Thank you for your patience while the API loads.
+This documentation provides an overview of the RESTful Infrastructure application, its components, setup, and usage instructions.
 
-## API WebApp
+The RESTful Infrastructure application consists of multiple components, each designed to handle specific aspects of the system. Below is a detailed breakdown of each component and how to interact with them.
 
-[Server API WebApp: Click here](https://vehicle-rest-api.streamlit.app/)
+## Documentation Links
+
+Documentation to specific components of the RESTful infrastructure can be found using the following links provided:
+
+- **[Server Documentation](https://github.com/ibadrather/RESTful_Infrastructure/tree/main/server/README.md)**
+
+  Provides detailed information on setting up and managing the server for the project.
+
+  And the API documentation can be found here: [API Documentation](https://github.com/ibadrather/RESTful_Infrastructure/tree/main/server/api/README.md)
+
+- **[Database Documentation](https://github.com/ibadrather/RESTful_Infrastructure/tree/main/server/database/README.md)**
+
+  Contains specifications and configuration details for the database.
+
+- **[Vehicle Client Documentation](https://github.com/ibadrather/RESTful_Infrastructure/tree/main/vehicle_client/README.md)**
+
+  Describes the client-side code and how to interact with the vehicle management API.
+
+## System Requirements
+
+- **Operating System** : This application is built and tested exclusively on **Linux Ubuntu** . Using it on other operating systems may lead to unexpected behavior.
+
+- **Hosting** : The application components are hosted on free-tier instances, which may enter sleep mode after periods of inactivity. If you experience a delay, please allow a few minutes for the services to restart. Your patience is appreciated.
+
+## Components
+
+### A. API
+
+The API, built using **FastAPI** , serves as the backend for the application, handling client requests for managing vehicle and sensor data. FastAPI was chosen due to its high performance, asynchronous capabilities, and ease of creating interactive documentation with OpenAPI.
+
+- **Documentation** : The API is documented using **Swagger UI** , providing an interactive interface for exploring and testing API endpoints.
+  - **Swagger UI** : [Access API Documentation here](https://restful-infrastructure.onrender.com/docs)
+
+- **Hosting** : The API is hosted on a free instance through Render.com. Due to the free hosting plan, the API may enter sleep mode during inactivity, which may result in a slight delay (a few minutes) when resuming.
+
+- **Further Details** : For more information on setting up or customizing the API, refer to the `server/README.md`, `server/api/README.md` file.
 
 
-## A. Programming Task – REST API - Server and Client
+### B. Client
+
+The client is a vehicle-specific module that interacts with the API to manage and retrieve data related to vehicle operations.
+
+- **Directory** : The client code is located in the `vehicle_client/` directory.
+
+- **Instructions** : Detailed instructions for running the client are available in `vehicle_client/README.md`.
+
+### C. API WebApp (Optional)
+A simple frontend is available as a proof of concept, built using **Streamlit** . This web app demonstrates how data can be visualized but is not a full-featured production version.
+- **WebApp** : [Access the WebApp here](https://vehicle-rest-api.streamlit.app/)
+
+> **Note** : The WebApp is designed primarily as a demonstration and may not include the same refinements and features as the core API and client components.
+
+---
+
+## Section 2: Programming Task – REST API - Server and Client
 
 ### Task Concept
 Develop a (very) small “RESTful infrastructure” by setting up a database (DB), implementing a REST API server as well as a REST API client. The client shall be able to store data through the API as well as retrieve this data. There is no specification of how this data should look like. You are also free in the choice of frameworks and database management systems.
@@ -41,37 +91,18 @@ Implement at least 3 API endpoints that:
 - Read data (coming from the database)
 - Update data that is already present in the database
 
+---
 
+## Section 3: Future Tasks and Improvements
 
-## Setup Commands Summary
+- **Upgrade Database to PostgreSQL** : For production-scale use, PostgreSQL is more robust than SQLite, supporting multi-client access and large datasets.
 
-- **`pip install uv`**: Installs the `uv` tool for managing and running Python projects.
+- **Enhanced Testing for CI/CD** : Add more tests to ensure stability and reliability in deployment pipelines.
 
-- **`pip install --upgrade pip`**: Upgrades the `pip` package manager to the latest version.
+- **Asynchronous API** : Convert API calls to async for improved performance under heavy load.
 
-- **`pip install --upgrade uv`**: Upgrades the `uv` tool to the latest version.
+- **Robust Error Handling** : Implement more detailed error management to improve reliability and troubleshooting.
 
-- **`uv add --group dev ruff`**: Adds `ruff`, a linter, to the development group for code quality checks.
+- **API Security** : Add TLS for secure client-server verification.
 
-- **`uv add --group test pytest`**: Adds `pytest`, a testing framework, to the test group for writing and running tests.
-
-- **`uv add sqlalchemy fastapi`**: Adds multiple dependencies for the project to `pyproject.toml`.
-
-- **`uv sync`**: Synchronizes the project dependencies as defined in the configuration.
-
-- **`uv remove --optional dev reorder-python-imports`**
-
-
-
-## C++ Vehicle Client
-cd vehicle_client
-mkdir build && cd build
-cmake ..
-make
-./vehicle_client
-
-
-
-cd vehicle_client && mkdir build && cd build && cmake .. && make && ./vehicle_client
-
-cd vehicle_client && rm -r build  && mkdir build && cd build && cmake .. && make && ./vehicle_client
+- **Verbose Logging** : Implement comprehensive logging for better monitoring and debugging.
