@@ -111,7 +111,6 @@ bool VehicleClient::sendRequest(const std::string& endpoint, const std::string& 
 
             if (responseJson.contains("status") && responseJson["status"] == "success")
             {
-                std::cout << "Success: " << responseJson["message"] << std::endl;
                 success = true;
             }
             else if (responseJson.contains("detail"))
@@ -168,23 +167,104 @@ std::pair<bool, std::string> VehicleClient::getVehicleStatus(const std::string& 
 
     try
     {
-        auto responseJson = json::parse(responseString);
-
-        if (responseJson.contains("status") && responseJson["status"] == "success")
+        // Check if responseString is a JSON object or a simple string
+        if (responseString.front() == '"' && responseString.back() == '"')
         {
-            return {true, responseJson["message"]};
-        }
-        else if (responseJson.contains("detail"))
-        {
-            return {false, responseJson["detail"]};
+            // Trim the double quotes and return the content as the vehicle status
+            std::string status = responseString.substr(1, responseString.size() - 2);
+            return {true, status};
         }
         else
         {
-            return {false, "Unexpected response format"};
+            // Parse JSON if it's not a simple string
+            auto responseJson = json::parse(responseString);
+
+            if (responseJson.contains("detail"))
+            {
+                return {false, responseJson["detail"].get<std::string>()};
+            }
+            else
+            {
+                return {false, "Unexpected response format"};
+            }
         }
     }
     catch (json::parse_error& e)
     {
         return {false, std::string("Failed to parse response: ") + e.what()};
     }
+}
+
+bool VehicleClient::updateVehicleStatus(const std::string& vehicleSerial, VehicleStatus status)
+{
+    CURL* curl = curl_easy_init();
+    if (!curl)
+    {
+        std::cerr << "Failed to initialize CURL" << std::endl;
+        return false;
+    }
+
+    std::string url = baseUrl + "/update-vehicle-status/";
+    std::string responseString;
+
+    // Prepare the JSON payload
+    json jsonPayload;
+    jsonPayload["vehicle_serial"] = vehicleSerial;
+    jsonPayload["vehicle_status"] = vehicleStatusToString(status);
+
+    // Convert JSON payload to string
+    std::string jsonPayloadStr = jsonPayload.dump();
+
+    struct curl_slist* headers = nullptr;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+
+    // Set CURL options
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, jsonPayloadStr.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseString);
+
+    // Perform the request
+    CURLcode res = curl_easy_perform(curl);
+    bool success = false;
+
+    if (res == CURLE_OK)
+    {
+        try
+        {
+            // Parse the response JSON
+            auto responseJson = json::parse(responseString);
+
+            if (responseJson.contains("status") && responseJson["status"] == "success")
+            {
+                std::cout << "Status updated successfully: " << responseJson["content"]
+                          << std::endl;
+                success = true;
+            }
+            else if (responseJson.contains("detail"))
+            {
+                std::cerr << "Error: " << responseJson["detail"] << std::endl;
+            }
+            else
+            {
+                std::cerr << "Unexpected response: " << responseString << std::endl;
+            }
+        }
+        catch (json::parse_error& e)
+        {
+            std::cerr << "Failed to parse JSON response: " << e.what() << std::endl;
+            std::cerr << "Raw response: " << responseString << std::endl;
+        }
+    }
+    else
+    {
+        std::cerr << "Request failed: " << curl_easy_strerror(res) << std::endl;
+    }
+
+    // Clean up
+    curl_easy_cleanup(curl);
+    curl_slist_free_all(headers);
+
+    return success;
 }
