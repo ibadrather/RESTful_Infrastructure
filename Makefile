@@ -59,6 +59,8 @@ build-run-client-scratch:
 	cd vehicle_client/build && cmake .. && make && ./vehicle_client
 
 format-cpp:
+	clear
+	@echo "Formatting c++ code"
 	find vehicle_client/ \( -name "*.cpp" -o -name "*.hpp" \) -not -name "json.hpp" -not -path "vehicle_client/build/*" -exec clang-format -i {} +
 
 

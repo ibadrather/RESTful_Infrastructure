@@ -1,79 +1,57 @@
 # Vehicle Client
 
 ## Overview
-
-This project is a C++ client that interacts with a vehicle API to record sensor data. It is designed to handle HTTP requests for different sensor types, sending data to an API server with detailed checks on the response. This project leverages `libcurl` for HTTP communication and `json.hpp` (a JSON library) to handle JSON parsing.
-
+This project is a C++ client for sending sensor data to a vehicle API, with checks on server responses. It uses `libcurl` for HTTP requests and `json.hpp` for JSON parsing.
 ## Project Structure
-
-The project is organized into the following directories and files:
 
 
 ```bash
 vehicle_client/
-├── build/                     # Directory for compiled binaries
-├── CMakeLists.txt             # CMake file for building the project
-├── include/                   # Directory for header files
-│   ├── VehicleClient.hpp      # Declaration of the VehicleClient class
-│   ├── SensorType.hpp         # Declaration of the SensorType enum class
-│   └── json.hpp               # JSON library for parsing API responses
-└── src/                       # Directory for source files
-    ├── VehicleClient.cpp      # Implementation of the VehicleClient class
-    └── main.cpp               # Entry point of the application
+├── build/                     # Compiled binaries
+├── CMakeLists.txt             # Build configuration
+├── include/                   # Header files
+│   ├── VehicleClient.hpp      # VehicleClient class
+│   ├── DataType.hpp           # DataType enum class
+│   └── json.hpp               # JSON library
+└── src/                       # Source files
+    ├── VehicleClient.cpp      # VehicleClient implementation
+    └── main.cpp               # Entry point
 ```
 
-### Key Components
+## Dependencies
 
-1. **CMakeLists.txt**
+**Build the Project**
 
-  - This file is responsible for building the project. It specifies the project requirements, links dependencies (such as `libcurl`), and sets up the include directories.
-
-  - To build the project, navigate to the project root and run:
+To sucessfuly build the project Ensure `CMake` and `libcurl` are installed or install them on Linux use the following command:
 
 ```bash
-cd vehicle_client
-mkdir build
-cd build
-cmake ..
-make
+sudo apt install libcurl4-openssl-dev cmake
 ```
 
-1. **include/VehicleClient.hpp**
+### Development Dependencies
 
-  - Header file for the `VehicleClient` class, which provides an interface to interact with the vehicle API. It defines methods for sending sensor data to the server and processing responses.
+For code formatting with `clang-format`:
 
-  - Key methods in this class:
-    - `addSensorData`: Sends sensor data to the server.
+```bash
+sudo apt-get install clang-format clang-tidy cppcheck
+```
 
-    - `sendRequest`: A helper method for making HTTP requests.
+To format the code run use the `Makefile` target:
 
-    - `getCurrentTimestamp`: Retrieves the current timestamp in ISO 8601 format.
+```bash
+make format-cpp
+```
 
-3. **src/VehicleClient.cpp**
+Or, run directly from root folder:
 
-  - Contains the implementation of the `VehicleClient` class. This file defines how each method in `VehicleClient.hpp` operates, including formatting requests, sending data to the API, and parsing responses.
-
-4. **include/SensorType.hpp**
-
-  - Declares the `SensorType` enum class, which represents different types of sensors (e.g., `TEMPERATURE`, `WEIGHT`, `FUEL`). Each sensor type has a unique identifier that is included in requests to the server.
-
-5. **src/main.cpp**
-  - Entry point of the application. This file demonstrates how to initialize `VehicleClient`, send sensor data, and handle responses.
-
-  - `main.cpp` can be customized to send various sensor data based on user requirements.
-
-6. **include/json.hpp**
-
-  - A header-only JSON library by [nlohmann/json](https://github.com/nlohmann/json) , included in the project to simplify JSON parsing and formatting. The library is used to parse the API's JSON response and check if the data was successfully recorded.
-
-  - Including `json.hpp` makes it easier to work with JSON in C++, removing the need to manually parse strings and providing robust error handling.
+```bash
+find vehicle_client/ \( -name "*.cpp" -o -name "*.hpp" \) -not -name "json.hpp" -not -path "vehicle_client/build/*" -exec clang-format -i {} +
+```
 
 ## How to Run the Project
 
-1. **Build the Project** :
-  - Make sure you have `CMake` and `libcurl` installed on your system.
+Run the following commands from the root directory to compile:
 
-  - From the project root:
 
 ```bash
 cd vehicle_client
@@ -83,27 +61,31 @@ cmake ..
 make
 ```
 
-2. **Run the Application** :
-  - Once compiled, execute the program from the `build` directory:
+  - Or, use the `Makefile` target to both build and run the program:
 
-```bashsh
+
+```bash
+make build-run-client-scratch
+```
+
+**Run the Application**
+  - Execute the program from the `build` directory:
+
+```bash
 ./vehicle_client
 ```
 
-## Why json.hpp Was Included
 
-The project includes `json.hpp` to handle JSON data from the server. This library allows:
-- **Parsing JSON Responses** : Simplifies checking for keys like `"status"` or `"message"` in the API response, providing structured error handling if the response doesn’t match expectations.
+## How It Works
 
-- **Cross-Compatibility** : It’s a single-header library with minimal dependencies, making it ideal for small projects where a full JSON library installation isn’t practical.
-Using `json.hpp` helps the program parse and understand responses from the API in a way that is both efficient and reliable.
+In `main.cpp`, the application continuously sends sensor data to the API and retrieves the vehicle’s status. The flow is as follows:
 
-## Future Extensions
+1. **Initialize the Client** : Set up `VehicleClient` with the API URL.
 
-The modular structure of `VehicleClient` allows for easy extension. Additional API endpoints can be added with new methods in the `VehicleClient` class. Each endpoint can use `sendRequest` to handle requests and response parsing, making it straightforward to add new API functionalities.
+2. **Send Status Update** : Update the vehicle's status to active.
 
+3. **Continuous Data Sending** :
 
-# Deps
-```bash
-  sudo apt-get install clang-format clang-tidy cppcheck
-```
+  - Every 10 seconds, send temperature data and retrieve the latest status.
+
+  - Handle a graceful shutdown upon receiving a SIGINT signal when ctrl+c is pressed.
