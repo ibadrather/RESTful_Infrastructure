@@ -37,9 +37,7 @@ py-dev-setup:
 	uv pip install pre-commit
 	pre-commit install
 
-test-server:
-	clear
-	@echo "Running tests..."
+test:
 	pytest server/tests
 
 run-api:
