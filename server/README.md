@@ -71,7 +71,7 @@ pre-commit install
 
 ---
 
-## Running the Server
+## Running the Server API
 Once dependencies are installed, you can start the API server. The server’s main file, `server/main.py`, launches the API.
 
 - **Makefile Target** :

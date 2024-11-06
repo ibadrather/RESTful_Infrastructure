@@ -1,7 +1,5 @@
 # Database and Models Documentation
 
-#### Overview
-
 This application uses a database to store vehicle-related data, specifically sensor data and vehicle status data. SQLAlchemy and SQLite are chosen to implement the database and ORM (Object Relational Mapping) structure, ensuring efficient and flexible interactions with the database while keeping the setup lightweight and straightforward.
 
 ### Database
@@ -52,3 +50,8 @@ Enums are used to define fixed sets of values for specific columns in the databa
 2. **`VehicleStatus`** : Represents possible vehicle statuses (Active, Inactive, Maintenance, Error).
 
 Enums improve code readability, validation, and enforce consistency by ensuring that only predefined values are used.
+
+
+### Database Creation (Not recommended)
+
+Database needs to created only once in the begging. If you want to create a creat a database you need to run the `create_database` function in the `server/database/models.py` file.

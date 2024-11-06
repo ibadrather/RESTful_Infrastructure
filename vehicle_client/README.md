@@ -11,7 +11,7 @@ vehicle_client/
 ├── CMakeLists.txt             # Build configuration
 ├── include/                   # Header files
 │   ├── VehicleClient.hpp      # VehicleClient class
-│   ├── DataType.hpp           # DataType enum class
+│   ├── DataType.hpp           # DataType enum classes
 │   └── json.hpp               # JSON library
 └── src/                       # Source files
     ├── VehicleClient.cpp      # VehicleClient implementation
@@ -25,6 +25,7 @@ vehicle_client/
 To sucessfuly build the project Ensure `CMake` and `libcurl` are installed or install them on Linux use the following command:
 
 ```bash
+sudo apt get update
 sudo apt install libcurl4-openssl-dev cmake
 ```
 
@@ -33,7 +34,8 @@ sudo apt install libcurl4-openssl-dev cmake
 For code formatting with `clang-format`:
 
 ```bash
-sudo apt-get install clang-format clang-tidy cppcheck
+sudo apt get update
+sudo apt install clang-format clang-tidy cppcheck
 ```
 
 To format the code run use the `Makefile` target:
