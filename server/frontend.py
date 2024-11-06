@@ -103,7 +103,7 @@ def display_update_vehicle_status(vehicle_data: List[str]):
         if st.button("Update Status", key="update_status_button"):
             success, response = update_vehicle_status(selected_vehicle, selected_status)
             if success and response:
-                st.success(response["message"])
+                st.success("Status updated sucessfully")
 
 
 def display_vehicle_status(vehicle_data: List[str]):
@@ -116,7 +116,7 @@ def display_vehicle_status(vehicle_data: List[str]):
         if st.button("Check Status", key="check_status_button"):
             success, response = get_vehicle_status(selected_vehicle)
             if success and response:
-                st.success(f"Vehicle {selected_vehicle}: {response['message']}")
+                st.success(f"Vehicle {selected_vehicle}: {response}")
 
 
 def display_register_vehicle():

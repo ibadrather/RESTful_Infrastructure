@@ -1,5 +1,7 @@
 server/.venv
 vehicle_client/build
+server/.__RESTful_API_Logging.lock
+.__RESTful_API_Logging.lock
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
